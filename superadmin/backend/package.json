@@ -12,7 +12,8 @@
     "smoke": "node scripts/smoke.mjs",
     "mock-hq": "node scripts/mock-hq.mjs",
     "test:booking": "node scripts/test-booking-webhook.mjs",
-    "cron": "node scripts/run-cron.mjs"
+    "cron": "node scripts/run-cron.mjs",
+    "reset-password": "tsx scripts/reset-password.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
