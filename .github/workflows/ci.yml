@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [frontend, superadmin, superadmin/backend]
+    defaults:
+      run:
+        working-directory: ${{ matrix.app }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: ${{ matrix.app }}/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npx tsc --noEmit
+      - name: Unit tests (calculator)
+        if: matrix.app == 'frontend'
+        run: npm test
+      - name: Build
+        run: npm run build
+        env:
+          # The website builds from its content snapshot when the API isn't reachable in CI.
+          NEXT_PUBLIC_API_URL: http://127.0.0.1:9
+          BACKEND_URL: http://127.0.0.1:9

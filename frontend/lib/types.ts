@@ -1,0 +1,91 @@
+import type { IconKey } from "@/components/ui/Icon";
+
+export type Faq = { q: string; a: string };
+type Seo = { seoTitle?: string; seoDescription?: string };
+
+export type Settings = {
+  businessName: string;
+  legalName: string;
+  tagline: string;
+  email?: string;
+  phone?: string;
+  hours?: string;
+  streetAddress?: string;
+  locality?: string;
+  region?: string;
+  postcode?: string;
+  companyNumber?: string;
+  accreditation?: string;
+  instagram?: string;
+  tiktok?: string;
+  linkedin?: string;
+  facebook?: string;
+  socialPosts?: string[];
+  googleReviewsUrl?: string;
+  bookingUrl?: string;
+  announcement?: string;
+  ga4Id?: string;
+  googleAdsId?: string;
+  googleAdsLeadLabel?: string;
+  metaPixelId?: string;
+  linkedinPartnerId?: string;
+  tiktokPixelId?: string;
+};
+
+export type Service = Seo & { slug: string; title: string; icon: IconKey; short: string; intro: string; includes: string[]; why?: string; faqs: Faq[] };
+export type Audience = Seo & { slug: string; title: string; kind: "stage" | "sector"; icon: IconKey; short: string; pains: string[]; help: string[] };
+export type Testimonial = { _id?: string; quote: string; name: string; company?: string; role?: string; service?: string; rating?: number; photo?: string; featured?: boolean };
+export type CaseStudy = Seo & { slug: string; title: string; client?: string; sector?: string; summary: string; challenge?: string; solution?: string; results: string[]; quote?: string; quoteName?: string; image?: string };
+export type Post = Seo & { slug: string; title: string; excerpt: string; category: string; date: string; author?: string; readMins?: number; cover?: string; body: string };
+export type TeamMember = { name: string; role: string; bio?: string; photo?: string; linkedin?: string };
+export type PageText = Seo & { key: string; heroEyebrow?: string; heroTitle?: string; heroText?: string; ctaTitle?: string; ctaText?: string; ogImage?: string };
+export type Location = Seo & { slug: string; town: string; intro: string; body?: string };
+export type LandingPage = { slug: string; headline: string; subheadline?: string; bullets: string[]; formIntent: "enquiry" | "call-request"; noindex?: boolean };
+export type LeadMagnet = { slug: string; title: string; description: string; bullets: string[]; cover?: string; file?: string };
+export type Quiz = {
+  title: string;
+  intro?: string;
+  questions: { question: string; category?: string; answers: { label: string; score: number }[] }[];
+  bands: { min: number; max: number; title: string; text: string }[];
+};
+export type TaxRates = {
+  taxYear: string;
+  verified?: boolean;
+  personalAllowance: number;
+  basicRateBand: number;
+  additionalRateThreshold: number;
+  basicRate: number;
+  higherRate: number;
+  additionalRate: number;
+  dividendAllowance: number;
+  dividendBasicRate: number;
+  dividendHigherRate: number;
+  dividendAdditionalRate: number;
+  employeeNiThreshold: number;
+  employeeNiUpperLimit: number;
+  employeeNiRate: number;
+  employeeNiUpperRate: number;
+  employerNiThreshold: number;
+  employerNiRate: number;
+  ctSmallProfitsRate: number;
+  ctMainRate: number;
+  ctLowerLimit: number;
+  ctUpperLimit: number;
+};
+
+export type SiteData = {
+  settings: Settings;
+  services: Service[];
+  audiences: Audience[];
+  testimonials: Testimonial[];
+  caseStudies: CaseStudy[];
+  posts: Post[];
+  team: TeamMember[];
+  faqs: Faq[];
+  pages: PageText[];
+  locations: Location[];
+  landingPages: LandingPage[];
+  leadMagnets: LeadMagnet[];
+  quiz: Quiz | null;
+  calculator: TaxRates | null;
+};
