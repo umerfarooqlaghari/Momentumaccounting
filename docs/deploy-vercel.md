@@ -17,7 +17,12 @@ The repository holds three apps, deployed as **three Vercel projects** from the 
 ### Plan
 - Vercel **Hobby** (free) is for personal, non-commercial use only, and only allows cron jobs **once a day**. Fine for a test deployment.
 - For the live business site use **Vercel Pro**, on an account/team **owned by Momentum Accounting** (prospectus §1.4). Pro runs the 10-minute HQ retry job.
-- On **Hobby**, edit `superadmin/backend/vercel.json` before deploying: change the `hq-sync` and `nurture` schedules to daily (e.g. `"0 6 * * *"`), or delete the `crons` block and use a free external scheduler (cron-job.org) instead. With more frequent schedules the deploy is rejected.
+- `superadmin/backend/vercel.json` currently uses **daily** cron schedules so it deploys on Hobby. **On Pro, switch to the production schedules**:
+  ```json
+  { "path": "/api/cron/hq-sync", "schedule": "*/10 * * * *" },
+  { "path": "/api/cron/nurture", "schedule": "0 * * * *" },
+  ```
+  (HQ retry every 10 minutes, follow-up emails hourly.) On Hobby you can instead call those URLs every 10 minutes from a free external scheduler such as cron-job.org, with the header `Authorization: Bearer <CRON_SECRET>`.
 
 ### Push the latest code
 ```bash
@@ -178,5 +183,5 @@ Do this on launch day (see `docs/launch-runbook.md`). The domain currently point
 | Uploads | Max **4 MB** per file (Vercel's request limit is 4.5 MB). Compress large photos/PDFs first |
 | Live website updates | Within ~1–15 seconds. The live connection reconnects every 5 minutes, which is normal |
 | Background work | Emails and HQ sync run after the response, using Vercel's `after()` support |
-| Scheduled jobs | Run by Vercel Cron from `superadmin/backend/vercel.json` (Pro for every-10-minute jobs) |
+| Scheduled jobs | Run by Vercel Cron from `superadmin/backend/vercel.json`: daily on Hobby; switch to every 10 min / hourly on Pro |
 | Region | London (`lhr1`) for all three projects |
