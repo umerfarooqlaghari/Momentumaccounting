@@ -38,7 +38,7 @@ export async function GET(request: Request) {
         try {
           onContent(await getContentVersion());
         } catch {}
-      }, 5_000);
+      }, 2_000);
       // Keeps proxies from closing an idle connection.
       const heartbeat = setInterval(() => {
         try {
