@@ -3,6 +3,7 @@ import { handler } from "@/lib/handler";
 import { requireRole } from "@/lib/auth";
 import { emailConfigured } from "@/lib/email";
 import { hqConfigured } from "@/lib/hq";
+import { revalidateWebsite } from "@/lib/revalidate";
 import { Revision } from "@/lib/models";
 import { Lead } from "@/models/Lead";
 
@@ -10,7 +11,8 @@ export const GET = handler(async (request) => {
   await requireRole(request, ["owner", "editor", "leads"]);
   const weekAgo = new Date(Date.now() - 7 * 86_400_000);
   const monthAgo = new Date(Date.now() - 30 * 86_400_000);
-  const [newThisWeek, newThisMonth, openLeads, wonThisMonth, hqPending, hqFailed, recentLeads, recentEdits] = await Promise.all([
+  const [website, newThisWeek, newThisMonth, openLeads, wonThisMonth, hqPending, hqFailed, recentLeads, recentEdits] = await Promise.all([
+    revalidateWebsite({ checkOnly: true }),
     Lead.countDocuments({ createdAt: { $gte: weekAgo } }),
     Lead.countDocuments({ createdAt: { $gte: monthAgo } }),
     Lead.countDocuments({ status: { $in: ["new", "contacted", "call_booked", "proposal_sent"] } }),
@@ -22,7 +24,13 @@ export const GET = handler(async (request) => {
   ]);
   return json(request, {
     stats: { newThisWeek, newThisMonth, openLeads, wonThisMonth },
-    health: { hqConfigured: hqConfigured(), hqPending, hqFailed, emailConfigured: emailConfigured() },
+    health: {
+      hqConfigured: hqConfigured(),
+      hqPending,
+      hqFailed,
+      emailConfigured: emailConfigured(),
+      websiteUpdates: website.ok ? { ok: true } : { ok: false, detail: website.detail },
+    },
     recentLeads,
     recentEdits,
   });

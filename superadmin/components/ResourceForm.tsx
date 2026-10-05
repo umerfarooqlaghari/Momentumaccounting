@@ -16,6 +16,7 @@ export function ResourceForm({ resource, initial }: { resource: Resource; initia
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
+  const [websiteWarning, setWebsiteWarning] = useState("");
   const [revisions, setRevisions] = useState<Revision[] | null>(null);
   const isNew = !initial?._id;
 
@@ -29,16 +30,20 @@ export function ResourceForm({ resource, initial }: { resource: Resource; initia
     setSaving(true);
     setError("");
     setSaved(false);
+    setWebsiteWarning("");
+    type SaveResult = { item: Doc; website?: { ok: boolean; detail?: string } };
     try {
+      let res: SaveResult;
       if (resource.singleton) {
-        await api(`admin/content/${resource.key}`, { method: "PUT", json: data });
+        res = await api<SaveResult>(`admin/content/${resource.key}`, { method: "PUT", json: data });
       } else if (isNew) {
-        const { item } = await api<{ item: Doc }>(`admin/content/${resource.key}`, { method: "POST", json: data });
-        router.replace(`/content/${resource.key}/${item._id}`);
+        res = await api<SaveResult>(`admin/content/${resource.key}`, { method: "POST", json: data });
+        router.replace(`/content/${resource.key}/${res.item._id}`);
         return;
       } else {
-        await api(`admin/content/${resource.key}/${initial!._id}`, { method: "PUT", json: data });
+        res = await api<SaveResult>(`admin/content/${resource.key}/${initial!._id}`, { method: "PUT", json: data });
       }
+      if (res.website && !res.website.ok) setWebsiteWarning(res.website.detail ?? "The website could not be refreshed.");
       setSaved(true);
       loadRevisions();
     } catch (err) {
@@ -76,10 +81,15 @@ export function ResourceForm({ resource, initial }: { resource: Resource; initia
             </Button>
             {saved && (
               <span role="status" className="flex items-center gap-1.5 text-sm font-medium text-emerald-700">
-                <CheckCircle2 className="size-4" /> Saved — the website updates within a minute
+                <CheckCircle2 className="size-4" /> {websiteWarning ? "Saved" : "Saved — live on the website now"}
               </span>
             )}
             {error && <ErrorBox message={error} />}
+            {websiteWarning && (
+              <p role="alert" className="w-full rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+                Saved, but the website wasn&apos;t refreshed: {websiteWarning} It will still update within 5 minutes.
+              </p>
+            )}
           </div>
         )}
       </form>

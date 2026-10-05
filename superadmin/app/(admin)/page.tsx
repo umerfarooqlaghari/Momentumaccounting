@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { AlertTriangle, CheckCircle2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2, RefreshCw } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAdmin } from "@/components/AdminShell";
-import { Badge, Card, ErrorBox, PageHeader, Spinner, formatDate } from "@/components/ui";
+import { Badge, Button, Card, ErrorBox, PageHeader, Spinner, formatDate } from "@/components/ui";
 
 type Dash = {
   stats: { newThisWeek: number; newThisMonth: number; openLeads: number; wonThisMonth: number };
-  health: { hqConfigured: boolean; hqPending: number; hqFailed: number; emailConfigured: boolean };
+  health: { hqConfigured: boolean; hqPending: number; hqFailed: number; emailConfigured: boolean; websiteUpdates: { ok: boolean; detail?: string } };
   recentLeads: { _id: string; name: string; businessName?: string; score: string; status: string; createdAt: string }[];
   recentEdits: { _id: string; resource: string; action: string; by: string; createdAt: string }[];
 };
@@ -18,6 +18,20 @@ export default function Dashboard() {
   const { user } = useAdmin();
   const [d, setD] = useState<Dash | null>(null);
   const [error, setError] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshMsg, setRefreshMsg] = useState("");
+  const refreshWebsite = async () => {
+    setRefreshing(true);
+    setRefreshMsg("");
+    try {
+      await api("admin/revalidate", { method: "POST" });
+      setRefreshMsg("Website refreshed with the latest content.");
+    } catch (e) {
+      setRefreshMsg((e as Error).message);
+    } finally {
+      setRefreshing(false);
+    }
+  };
   useEffect(() => {
     api<Dash>("admin/dashboard").then(setD).catch((e) => setError(e.message));
   }, []);
@@ -32,6 +46,10 @@ export default function Dashboard() {
     { label: "Won (30 days)", value: d.stats.wonThisMonth },
   ];
   const checks = [
+    {
+      ok: d.health.websiteUpdates.ok,
+      text: d.health.websiteUpdates.ok ? "Edits update the website instantly" : `Website isn't receiving updates: ${d.health.websiteUpdates.detail}`,
+    },
     { ok: d.health.emailConfigured, text: d.health.emailConfigured ? "Email sending is set up" : "Email sending is not set up (SMTP in backend .env)" },
     { ok: d.health.hqConfigured, text: d.health.hqConfigured ? "Connected to Momentum HQ" : "Momentum HQ connection not configured — leads are stored safely here until it is" },
     { ok: d.health.hqFailed === 0, text: d.health.hqFailed ? `${d.health.hqFailed} ${d.health.hqFailed === 1 ? "lead" : "leads"} failed to reach Momentum HQ` : `${d.health.hqPending} ${d.health.hqPending === 1 ? "lead" : "leads"} waiting to sync to HQ` },
@@ -92,6 +110,12 @@ export default function Dashboard() {
                 </li>
               ))}
             </ul>
+            <div className="mt-5 border-t border-charcoal/10 pt-4">
+              <Button variant="ghost" onClick={refreshWebsite} loading={refreshing}>
+                <RefreshCw className="size-4" /> Refresh website now
+              </Button>
+              {refreshMsg && <p className="mt-2 text-sm">{refreshMsg}</p>}
+            </div>
           </Card>
           <Card className="p-6">
             <h2 className="mb-4 font-bold">Recent edits</h2>

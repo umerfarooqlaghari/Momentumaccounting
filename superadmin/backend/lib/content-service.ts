@@ -39,10 +39,11 @@ function checkRequired(fields: Field[], data: Record<string, unknown>) {
 }
 
 export async function afterChange(resource: Resource) {
-  if (!resource.revalidates) return;
+  if (!resource.revalidates) return undefined;
   // Order matters: expire the website cache first, then tell open tabs to refresh.
-  await revalidateWebsite();
+  const website = await revalidateWebsite();
   await bumpContentVersion();
+  return website;
 }
 
 export async function snapshot(resource: Resource, doc: { _id: unknown; toObject?: () => unknown }, action: "update" | "delete", session: Session) {
@@ -59,8 +60,8 @@ export async function createItem(resource: Resource, body: Record<string, unknow
   const data = clean(resource.fields, body);
   checkRequired(resource.fields, data);
   const doc = await modelFor(resource).create(data);
-  await afterChange(resource);
-  return doc;
+  const website = await afterChange(resource);
+  return { doc, website };
 }
 
 export async function updateItem(resource: Resource, id: string | null, body: Record<string, unknown>, session: Session) {
@@ -75,6 +76,6 @@ export async function updateItem(resource: Resource, id: string | null, body: Re
   await snapshot(resource, doc, "update", session);
   doc.set(data);
   await doc.save();
-  await afterChange(resource);
-  return doc;
+  const website = await afterChange(resource);
+  return { doc, website };
 }

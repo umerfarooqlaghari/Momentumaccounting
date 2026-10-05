@@ -18,8 +18,8 @@ export const PUT = handler(async (request, { resource: key, id }) => {
   const resource = resourceOr404(key);
   const session = await requireRole(request, resource.roles);
   if (resource.readOnly) throw new HttpError(405, "This list is read-only");
-  const doc = await updateItem(resource, id, await request.json(), session);
-  return json(request, { item: doc });
+  const { doc, website } = await updateItem(resource, id, await request.json(), session);
+  return json(request, { item: doc, website });
 });
 
 export const DELETE = handler(async (request, { resource: key, id }) => {

@@ -34,8 +34,8 @@ export const POST = handler(async (request, { resource: key }) => {
   await requireRole(request, resource.roles);
   if (resource.readOnly) throw new HttpError(405, "This list is read-only");
   if (resource.singleton) throw new HttpError(405, "Use PUT for settings");
-  const doc = await createItem(resource, await request.json());
-  return json(request, { item: doc }, 201);
+  const { doc, website } = await createItem(resource, await request.json());
+  return json(request, { item: doc, website }, 201);
 });
 
 // Singletons (settings, quiz, calculator) are saved with PUT on the collection URL.
@@ -43,6 +43,6 @@ export const PUT = handler(async (request, { resource: key }) => {
   const resource = resourceOr404(key);
   const session = await requireRole(request, resource.roles);
   if (!resource.singleton) throw new HttpError(405, "PUT is only for singletons");
-  const doc = await updateItem(resource, null, await request.json(), session);
-  return json(request, { item: doc });
+  const { doc, website } = await updateItem(resource, null, await request.json(), session);
+  return json(request, { item: doc, website });
 });
