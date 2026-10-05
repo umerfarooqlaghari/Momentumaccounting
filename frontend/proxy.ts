@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { apiUrl } from "@/lib/site";
 
 // Redirects managed in superadmin (e.g. old WordPress URLs, MA-103/115), cached for a minute.
 // Built-in defaults keep the old site's URLs working even if the backend is unreachable.
@@ -16,7 +17,7 @@ async function rules() {
   if (cache && Date.now() - cache.at < 60_000) return cache.rules;
   let list = DEFAULTS;
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000"}/api/public/redirects`, { signal: AbortSignal.timeout(2000) });
+    const res = await fetch(`${apiUrl}/api/public/redirects`, { signal: AbortSignal.timeout(2000) });
     if (res.ok) list = [...DEFAULTS, ...((await res.json()) as { items: Rule[] }).items];
   } catch {}
   const map = new Map(list.map((r) => [r.from.replace(/\/+$/, "").toLowerCase() || "/", r]));

@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { apiUrl } from "@/lib/site";
+import { apiReachable, apiUrl } from "@/lib/site";
 
 // Listens for content changes from superadmin and refreshes the page data in place
 // (no full reload — scroll position and anything typed into forms are kept).
@@ -10,6 +10,7 @@ export function LiveContent() {
   const router = useRouter();
 
   useEffect(() => {
+    if (!apiReachable()) return;
     let baseline: string | null = null;
     let timer: ReturnType<typeof setTimeout> | undefined;
     const source = new EventSource(`${apiUrl}/api/public/content-events`);

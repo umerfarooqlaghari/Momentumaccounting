@@ -4,6 +4,10 @@ import { contentEvents, getContentVersion } from "@/lib/content-events";
 
 export const OPTIONS = preflight;
 
+// Serverless hosts (Vercel) end long requests; the browser's EventSource reconnects automatically
+// and the "ready" version check catches anything saved while it was reconnecting.
+export const maxDuration = 300;
+
 // Server-Sent Events stream for the public website. Sends the current content version on connect,
 // then a "content" event whenever superadmin saves something that appears on the website.
 export async function GET(request: Request) {

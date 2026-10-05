@@ -16,6 +16,8 @@ export function UploadForm({ accept, onUploaded }: { accept: string; onUploaded:
   const upload = async () => {
     const file = fileRef.current?.files?.[0];
     if (!file) return setError("Choose a file first");
+    // Hosting (Vercel) rejects uploads over 4.5 MB; stop early with a clear message.
+    if (file.size > 4 * 1024 * 1024) return setError("File is larger than 4 MB. Please compress it and try again.");
     setBusy(true);
     setError("");
     const fd = new FormData();

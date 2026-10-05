@@ -1,6 +1,18 @@
 import type { NextConfig } from "next";
 
-const api = new URL(process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000");
+// Tolerates a blank value, a missing "https://" and a trailing slash, so a small typo in the
+// hosting dashboard doesn't break the build.
+function parseApiUrl(raw?: string) {
+  const value = raw?.trim().replace(/\/+$/, "");
+  if (!value) return new URL("http://localhost:4000");
+  try {
+    return new URL(/^https?:\/\//.test(value) ? value : `https://${value}`);
+  } catch {
+    throw new Error(`NEXT_PUBLIC_API_URL is not a valid URL: "${value}". Use the full address, e.g. https://momentum-api.vercel.app`);
+  }
+}
+
+const api = parseApiUrl(process.env.NEXT_PUBLIC_API_URL);
 
 const securityHeaders = [
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },

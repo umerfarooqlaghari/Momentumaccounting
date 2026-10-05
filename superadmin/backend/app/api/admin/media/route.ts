@@ -7,7 +7,8 @@ import { bucket } from "@/lib/media";
 export const OPTIONS = preflight;
 
 const ALLOWED = ["image/jpeg", "image/png", "image/webp", "image/avif", "image/svg+xml", "image/gif", "application/pdf"];
-const MAX_BYTES = 15 * 1024 * 1024;
+// Vercel rejects request bodies over 4.5 MB, so uploads are capped at 4 MB everywhere.
+const MAX_BYTES = 4 * 1024 * 1024;
 
 export const GET = handler(async (request) => {
   await requireRole(request, ["owner", "editor"]);
@@ -31,7 +32,7 @@ export const POST = handler(async (request) => {
   const alt = String(form.get("alt") ?? "");
   if (!(file instanceof File)) throw new HttpError(422, "No file uploaded");
   if (!ALLOWED.includes(file.type)) throw new HttpError(422, "Only images and PDFs can be uploaded");
-  if (file.size > MAX_BYTES) throw new HttpError(422, "File is larger than 15 MB");
+  if (file.size > MAX_BYTES) throw new HttpError(422, "File is larger than 4 MB. Please compress it (e.g. tinypng.com or a PDF compressor) and try again.");
   if (file.type.startsWith("image/") && file.type !== "image/svg+xml" && !alt.trim()) {
     throw new HttpError(422, "Alt text is required for images (accessibility)");
   }
