@@ -19,6 +19,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { api } from "@/lib/api";
+import { websiteUrl } from "@/lib/urls";
 import type { Resource, Role } from "@/lib/types";
 import { Spinner } from "./ui";
 
@@ -142,7 +143,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           </nav>
 
           <div className="mt-8 border-t border-white/10 pt-4">
-            <a href={process.env.NEXT_PUBLIC_WEBSITE_URL ?? "http://localhost:3000"} target="_blank" rel="noreferrer" className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/60 hover:text-white">
+            <a href={websiteUrl} target="_blank" rel="noreferrer" className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/60 hover:text-white">
               <ExternalLink className="size-4" /> View website
             </a>
             <div className="mt-2 px-3 text-sm text-white">

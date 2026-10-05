@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { SESSION_COOKIE, backendUrl } from "@/lib/session";
+import { SESSION_COOKIE, backendUrl, unreachableMessage } from "@/lib/session";
 
 // Same-origin bridge to the backend: attaches the session token from the httpOnly cookie.
 async function forward(request: Request, ctx: RouteContext<"/api/backend/[...path]">) {
@@ -13,12 +13,17 @@ async function forward(request: Request, ctx: RouteContext<"/api/backend/[...pat
   const contentType = request.headers.get("content-type");
   if (contentType) headers.set("Content-Type", contentType);
 
-  const res = await fetch(target, {
-    method: request.method,
-    headers,
-    body: ["GET", "HEAD"].includes(request.method) ? undefined : await request.arrayBuffer(),
-  }).catch(() => null);
-  if (!res) return Response.json({ error: "Can't reach the backend" }, { status: 502 });
+  let res: Response;
+  try {
+    res = await fetch(target, {
+      method: request.method,
+      headers,
+      body: ["GET", "HEAD"].includes(request.method) ? undefined : await request.arrayBuffer(),
+    });
+  } catch (err) {
+    console.error("[backend bridge]", err);
+    return Response.json({ error: unreachableMessage(err) }, { status: 502 });
+  }
 
   const out = new Headers();
   for (const h of ["content-type", "content-disposition"]) {

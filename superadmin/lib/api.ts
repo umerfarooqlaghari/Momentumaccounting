@@ -1,5 +1,7 @@
 "use client";
 
+import { publicBackendUrl } from "./urls";
+
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -28,4 +30,4 @@ export async function api<T = unknown>(path: string, init: RequestInit & { json?
   return data as T;
 }
 
-export const mediaUrl = (id?: string) => (id ? `${process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:4000"}/api/media/${id}` : "");
+export const mediaUrl = (id?: string) => (id ? `${publicBackendUrl}/api/media/${id}` : "");
